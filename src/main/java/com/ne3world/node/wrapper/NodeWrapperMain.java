@@ -1,4 +1,22 @@
+/*
+ * Copyright 2007-2009 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ne3world.node.wrapper;
+
+import static com.ne3world.node.wrapper.Download.UNKNOWN_VERSION;
 
 import java.io.File;
 import java.net.URI;
@@ -7,13 +25,15 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Properties;
 
-import static org.gradle.wrapper.Download.UNKNOWN_VERSION;
+import com.ne3world.node.wrapper.cli.CommandLineParser;
+import com.ne3world.node.wrapper.cli.ParsedCommandLine;
+import com.ne3world.node.wrapper.cli.SystemPropertiesCommandLineConverter;
 
 public class NodeWrapperMain {
-    public static final String GRADLE_USER_HOME_OPTION = "g";
-    public static final String GRADLE_USER_HOME_DETAILED_OPTION = "gradle-user-home";
-    public static final String GRADLE_QUIET_OPTION = "q";
-    public static final String GRADLE_QUIET_DETAILED_OPTION = "quiet";
+    public static final String NODE_USER_HOME_OPTION = "n";
+    public static final String NODE_USER_HOME_DETAILED_OPTION = "node-user-home";
+    public static final String NODE_QUIET_OPTION = "q";
+    public static final String NODE_QUIET_DETAILED_OPTION = "quiet";
 
     public static void main(String[] args) throws Exception {
         File wrapperJar = wrapperJar();
@@ -22,8 +42,8 @@ public class NodeWrapperMain {
 
         CommandLineParser parser = new CommandLineParser();
         parser.allowUnknownOptions();
-        parser.option(GRADLE_USER_HOME_OPTION, GRADLE_USER_HOME_DETAILED_OPTION).hasArgument();
-        parser.option(GRADLE_QUIET_OPTION, GRADLE_QUIET_DETAILED_OPTION);
+        parser.option(NODE_USER_HOME_OPTION, NODE_USER_HOME_DETAILED_OPTION).hasArgument();
+        parser.option(NODE_QUIET_OPTION, NODE_QUIET_DETAILED_OPTION);
 
         SystemPropertiesCommandLineConverter converter = new SystemPropertiesCommandLineConverter();
         converter.configure(parser);
@@ -33,22 +53,22 @@ public class NodeWrapperMain {
         Properties systemProperties = System.getProperties();
         systemProperties.putAll(converter.convert(options, new HashMap<String, String>()));
 
-        File gradleUserHome = gradleUserHome(options);
+        File nodeUserHome = nodeUserHome(options);
 
-        addSystemProperties(gradleUserHome, rootDir);
+        addSystemProperties(nodeUserHome, rootDir);
 
         Logger logger = logger(options);
 
         WrapperExecutor wrapperExecutor = WrapperExecutor.forWrapperPropertiesFile(propertiesFile);
         wrapperExecutor.execute(
                 args,
-                new Install(logger, new Download(logger, "gradlew", UNKNOWN_VERSION), new PathAssembler(gradleUserHome)),
+                new Install(logger, new Download(logger, "nodew", UNKNOWN_VERSION), new PathAssembler(nodeUserHome)),
                 new BootstrapMainStarter());
     }
 
-    private static void addSystemProperties(File gradleHome, File rootDir) {
-        System.getProperties().putAll(SystemPropertiesHandler.getSystemProperties(new File(gradleHome, "gradle.properties")));
-        System.getProperties().putAll(SystemPropertiesHandler.getSystemProperties(new File(rootDir, "gradle.properties")));
+    private static void addSystemProperties(File nodeHome, File rootDir) {
+        System.getProperties().putAll(SystemPropertiesHandler.getSystemProperties(new File(nodeHome, "node.properties")));
+        System.getProperties().putAll(SystemPropertiesHandler.getSystemProperties(new File(rootDir, "node.properties")));
     }
 
     private static File rootDir(File wrapperJar) {
@@ -76,14 +96,14 @@ public class NodeWrapperMain {
         }
     }
 
-    private static File gradleUserHome(ParsedCommandLine options) {
-        if (options.hasOption(GRADLE_USER_HOME_OPTION)) {
-            return new File(options.option(GRADLE_USER_HOME_OPTION).getValue());
+    private static File nodeUserHome(ParsedCommandLine options) {
+        if (options.hasOption(NODE_USER_HOME_OPTION)) {
+            return new File(options.option(NODE_USER_HOME_OPTION).getValue());
         }
-        return GradleUserHomeLookup.gradleUserHome();
+        return NodeUserHomeLookup.nodeUserHome();
     }
 
     private static Logger logger(ParsedCommandLine options) {
-        return new Logger(options.hasOption(GRADLE_QUIET_OPTION));
+        return new Logger(options.hasOption(NODE_QUIET_OPTION));
     }
 }

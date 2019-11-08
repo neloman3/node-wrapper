@@ -20,7 +20,7 @@ public class WrapperExecutor {
     private final WrapperConfiguration config = new WrapperConfiguration();
 
     public static WrapperExecutor forProjectDirectory(File projectDir) {
-        return new WrapperExecutor(new File(projectDir, "gradle/wrapper/gradle-wrapper.properties"), new Properties());
+        return new WrapperExecutor(new File(projectDir, "node/wrapper/node-wrapper.properties"), new Properties());
     }
 
     public static WrapperExecutor forWrapperPropertiesFile(File propertiesFile) {
@@ -89,8 +89,8 @@ public class WrapperExecutor {
     }
 
     public void execute(String[] args, Install install, BootstrapMainStarter bootstrapMainStarter) throws Exception {
-        File gradleHome = install.createDist(config);
-        bootstrapMainStarter.start(args, gradleHome);
+        File nodeHome = install.createDist(config);
+        bootstrapMainStarter.start(args, nodeHome);
     }
 
     private String getProperty(String propertyName) {
