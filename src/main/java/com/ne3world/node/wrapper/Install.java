@@ -78,6 +78,7 @@ public class Install {
                 verifyDownloadChecksum(configuration.getDistribution().toString(), localZipFile, distributionSha256Sum);
 
                 try {
+                	logger.log("Unzipping " + localZipFile);
                     unzip(localZipFile, distDir);
                 } catch (IOException e) {
                     logger.log("Could not unzip " + localZipFile.getAbsolutePath() + " to " + distDir.getAbsolutePath() + ".");
@@ -135,7 +136,7 @@ public class Install {
         }
 
         File nodeHome = dirs.get(0);
-        if (BootstrapMainStarter.findLauncherJar(nodeHome) == null) {
+        if (BootstrapMainStarter.findLauncher(nodeHome) == null) {
             return InstallCheck.failure(String.format("Node distribution '%s' does not appear to contain a Node distribution.", distributionDescription));
         }
         return InstallCheck.success(nodeHome);

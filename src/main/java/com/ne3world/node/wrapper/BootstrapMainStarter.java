@@ -27,13 +27,30 @@ public class BootstrapMainStarter {
     public void start(String[] args, File nodeHome) throws Exception {
         Process theProcess = null;
         BufferedReader inStream = null;
+        int tmpContArgs = 1;
+        
+        String[] tmpArgs = new String[args.length+1];
 
+        if (args != null && "--npm".equals(args[0])) {
+        	tmpArgs = new String[args.length];
+        	tmpArgs[0] = nodeHome + "\\npm.cmd";
+    	} else {
+    		tmpArgs[0] = nodeHome + "\\node.exe";
+    	}
+        
+        for (String tmpArg : args) {
+        	if (!"--npm".equals(tmpArg))
+        			tmpArgs[tmpContArgs++] = tmpArg;
+        }
+        
         try {
-            theProcess = Runtime.getRuntime().exec("node.exe");
+            theProcess = Runtime.getRuntime().exec(tmpArgs);
         } catch (IOException e) {
             System.err.println("Error en el método exec()");
             e.printStackTrace();
         }
+
+        theProcess.waitFor();
 
         // leer en la corriente de salida estándar del programa llamado.
         try {
@@ -45,17 +62,17 @@ public class BootstrapMainStarter {
         }
     }
 
-    static File findLauncherJar(File nodeHome) {
-        File libDirectory = new File(nodeHome, "lib");
-        if (libDirectory.exists() && libDirectory.isDirectory()) {
-            File[] launcherJars = libDirectory.listFiles(new FilenameFilter() {
+    static File findLauncher(File nodeHome) {
+        File directory = new File(nodeHome, "./");
+        if (directory.exists() && directory.isDirectory()) {
+            File[] launcher = directory.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.matches("node-launcher-.*\\.jar");
+                    return name.matches("node*.exe");
                 }
             });
-            if (launcherJars != null && launcherJars.length == 1) {
-                return launcherJars[0];
+            if (launcher != null && launcher.length == 1) {
+                return launcher[0];
             }
         }
         return null;

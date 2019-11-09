@@ -76,7 +76,11 @@ public class NodeWrapperMain {
     }
 
     private static File wrapperProperties(File wrapperJar) {
-        return new File(wrapperJar.getParent(), wrapperJar.getName().replaceFirst("\\.jar$", ".properties"));
+    	String tmpPropertiesName = wrapperJar.getName();
+    	if (tmpPropertiesName.indexOf(".jar") < 0) {
+    		tmpPropertiesName = "node-wrapper.jar";
+    	}
+        return new File(wrapperJar.getParent(), tmpPropertiesName.replaceFirst("\\.jar$", ".properties"));
     }
 
     private static File wrapperJar() {
