@@ -59,6 +59,7 @@ set CLASSPATH=%APP_HOME%\node\wrapper\node-wrapper.jar
 
 @rem Execute Node
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %NODE_OPTS% "-Dorg.node.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" com.ne3world.node.wrapper.NodeWrapperMain %CMD_LINE_ARGS%
+echo Fin
 
 :end
 @rem End local scope for the variables with windows NT shell

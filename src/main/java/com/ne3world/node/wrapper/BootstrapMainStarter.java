@@ -21,12 +21,13 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 public class BootstrapMainStarter {
 
     public void start(String[] args, File nodeHome) throws Exception {
         Process theProcess = null;
-        BufferedReader inStream = null;
+        BufferedReader inStream = null, errStream = null;
         int tmpContArgs = 1;
         
         String[] tmpArgs = new String[args.length+1];
@@ -34,7 +35,10 @@ public class BootstrapMainStarter {
         if (args != null && "--npm".equals(args[0])) {
         	tmpArgs = new String[args.length];
         	tmpArgs[0] = nodeHome + "\\npm.cmd";
-    	} else {
+    	} else if (args != null && "--npx".equals(args[0])) {
+        	tmpArgs = new String[args.length];
+        	tmpArgs[0] = nodeHome + "\\npx.cmd";
+        } else {
     		tmpArgs[0] = nodeHome + "\\node.exe";
     	}
         
@@ -50,15 +54,23 @@ public class BootstrapMainStarter {
             e.printStackTrace();
         }
 
-        theProcess.waitFor();
-
         // leer en la corriente de salida estándar del programa llamado.
         try {
             inStream = new BufferedReader(new InputStreamReader(theProcess.getInputStream()));
-            System.out.println(inStream.readLine());
+            errStream = new BufferedReader(new InputStreamReader(theProcess.getErrorStream()));
+            while (theProcess.isAlive()) {
+                theProcess.waitFor(500, TimeUnit.MILLISECONDS);
+                System.out.println(inStream.readLine());
+                System.out.println(errStream.readLine());
+            }
         } catch (IOException e) {
             System.err.println("Error en inStream.readLine()");
             e.printStackTrace();
+        } catch (InterruptedException ie) {
+            System.err.println("Interrumpido");
+        } finally {
+            inStream.close();
+            errStream.close();
         }
     }
 
